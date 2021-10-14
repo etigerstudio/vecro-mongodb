@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"github.com/go-kit/kit/endpoint"
 	"net/http"
 	"net/url"
@@ -21,8 +20,13 @@ func main() {
 	const nameEnvKey = "BEN_NAME"
 	const subsystemEnvKey = "BEN_SUBSYSTEM"
 	const serviceTypeEnvKey = "BEN_SERVICE_TYPE"
+	const listenAddressEnvKey = "BEN_LISTEN_ADDRESS"
 	const calleeEnvKey = "BEN_CALLEES"
 	const calleeSeparator = " "
+
+	var logger log.Logger
+	logger = log.NewLogfmtLogger(os.Stderr)
+	logger = log.With(logger, "listen", *listen, "caller", log.DefaultCaller)
 
 	serviceTypeStr, exists := os.LookupEnv(serviceTypeEnvKey)
 	var serviceType ServiceType
@@ -35,15 +39,13 @@ func main() {
 		}
 		serviceType = ServiceType(serviceTypeInt)
 	}
+	logger.Log("service type", serviceType)
 
-	var (
-		listen = flag.String("listen", ":8080", "HTTP listen address")
-	)
-	flag.Parse()
-
-	var logger log.Logger
-	logger = log.NewLogfmtLogger(os.Stderr)
-	logger = log.With(logger, "listen", *listen, "caller", log.DefaultCaller)
+	listenAddress, exists := os.LookupEnv(listenAddressEnvKey)
+	if !exists {
+		listenAddress = ":8080"
+	}
+	logger.Log("listen address", listenAddress)
 
 	subsystem := os.Getenv(subsystemEnvKey)
 	if subsystem == "" {
@@ -100,6 +102,6 @@ func main() {
 
 	http.Handle("/", baseHandler)
 	http.Handle("/metrics", promhttp.Handler())
-	logger.Log("msg", "HTTP", "addr", *listen)
-	logger.Log("err", http.ListenAndServe(*listen, nil))
+	logger.Log("msg", "HTTP", "addr", listenAddress)
+	logger.Log("err", http.ListenAndServe(listenAddress, nil))
 }
