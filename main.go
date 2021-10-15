@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 	"strings"
 
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
@@ -26,26 +25,20 @@ func main() {
 
 	var logger log.Logger
 	logger = log.NewLogfmtLogger(os.Stderr)
-	logger = log.With(logger, "listen", *listen, "caller", log.DefaultCaller)
+	logger = log.With(logger, "caller", log.DefaultCaller)
 
 	serviceTypeStr, exists := os.LookupEnv(serviceTypeEnvKey)
-	var serviceType ServiceType
+	serviceType := ServiceType(serviceTypeStr)
 	if !exists {
 		serviceType = vanilla
-	} else {
-		serviceTypeInt, err := strconv.Atoi(serviceTypeStr)
-		if err != nil {
-			panic(err)
-		}
-		serviceType = ServiceType(serviceTypeInt)
 	}
-	logger.Log("service type", serviceType)
+	logger.Log("service_type", serviceType)
 
 	listenAddress, exists := os.LookupEnv(listenAddressEnvKey)
 	if !exists {
 		listenAddress = ":8080"
 	}
-	logger.Log("listen address", listenAddress)
+	logger.Log("listen_address", listenAddress)
 
 	subsystem := os.Getenv(subsystemEnvKey)
 	if subsystem == "" {

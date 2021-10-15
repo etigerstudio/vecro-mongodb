@@ -16,12 +16,12 @@ type baseService struct{
 	serviceType ServiceType
 }
 
-type ServiceType int
+type ServiceType string
 
 const (
-	vanilla ServiceType = 0
-	cpu ServiceType = 1
-	io ServiceType = 2
+	vanilla ServiceType = "vanilla"
+	cpu ServiceType = "cpu"
+	io ServiceType = "io"
 )
 
 func (svc baseService) Execute() error {
