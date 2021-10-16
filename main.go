@@ -20,7 +20,7 @@ func main() {
 	const subsystemEnvKey = "BEN_SUBSYSTEM"
 	const serviceTypeEnvKey = "BEN_SERVICE_TYPE"
 	const listenAddressEnvKey = "BEN_LISTEN_ADDRESS"
-	const calleeEnvKey = "BEN_CALLEES"
+	const calleeEnvKey = "BEN_CALLS"
 	const calleeSeparator = " "
 
 	var logger log.Logger
@@ -65,9 +65,9 @@ func main() {
 	}, nil)
 
 	// Create callee endpoint list from the environment variable
-	var callees []endpoint.Endpoint
+	var calls []endpoint.Endpoint
 	calleeList := os.Getenv(calleeEnvKey)
-	logger.Log("callees", calleeList)
+	logger.Log("calls", calleeList)
 	for _, calleeStr := range strings.Split(calleeList, calleeSeparator) {
 		callURL, err := url.Parse(calleeStr)
 		if err != nil {
@@ -79,11 +79,11 @@ func main() {
 			encodeRequest,
 			decodeBaseResponse,
 		).Endpoint()
-		callees = append(callees, calleeEndpoint)
+		calls = append(calls, calleeEndpoint)
 	}
 
 	var svc BaseService
-	svc = baseService{callees: callees, serviceType: serviceType}
+	svc = baseService{calls: calls, serviceType: serviceType}
 	svc = loggingMiddleware(logger)(svc)
 	svc = instrumentingMiddleware(requestCount, requestLatency)(svc)
 

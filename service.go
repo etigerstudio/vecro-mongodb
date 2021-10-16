@@ -11,7 +11,7 @@ type BaseService interface {
 }
 
 type baseService struct{
-	callees []endpoint.Endpoint  // Downstream endpoints to be called on
+	calls []endpoint.Endpoint  // Downstream endpoints to be called on
 	isSynchronous bool  // Whether to call services synchronously or asynchronously.  TODO: NOT IMPLEMENTED YET!
 	serviceType ServiceType
 }
@@ -34,7 +34,7 @@ func (svc baseService) Execute() error {
 	stress(svc.serviceType)
 
 	// Call downstream services
-	for _, ep := range svc.callees {
+	for _, ep := range svc.calls {
 		// TODO: Pass parameters and parse responses
 		// TODO: Support async calling mode
 		_, err := ep(ctx, nil)
