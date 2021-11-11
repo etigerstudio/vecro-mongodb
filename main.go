@@ -4,10 +4,12 @@ import (
 	"github.com/go-kit/kit/endpoint"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/go-kit/kit/log"
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
@@ -15,12 +17,14 @@ import (
 )
 
 func main() {
-	const nameEnvKey = "BEN_NAME"
-	const subsystemEnvKey = "BEN_SUBSYSTEM"
-	const serviceTypeEnvKey = "BEN_SERVICE_TYPE"
-	const listenAddressEnvKey = "BEN_LISTEN_ADDRESS"
-	const callEnvKey = "BEN_CALLS"
-	const callSeparator = " "
+	const (
+		nameEnvKey = "BEN_NAME"
+		subsystemEnvKey = "BEN_SUBSYSTEM"
+		serviceTypeEnvKey = "BEN_SERVICE_TYPE"
+		listenAddressEnvKey = "BEN_LISTEN_ADDRESS"
+		callEnvKey = "BEN_CALLS"
+		callSeparator = " "
+	)
 
 	var logger log.Logger
 	logger = log.NewLogfmtLogger(os.Stderr)
@@ -75,6 +79,9 @@ func main() {
 		logger.Log("calls", "[empty call list]")
 	}
 
+	// Seed random number generator
+	rand.Seed(time.Now().UnixNano())
+
 	var svc BaseService
 	svc = baseService{calls: calls, serviceType: serviceType}
 	svc = loggingMiddleware(logger)(svc)
@@ -90,15 +97,4 @@ func main() {
 	http.Handle("/metrics", promhttp.Handler())
 	logger.Log("msg", "HTTP", "addr", listenAddress)
 	logger.Log("err", http.ListenAndServe(listenAddress, nil))
-}
-
-// Get an environment variable by name
-// which is replaced by default value if it's empty
-func getEnvString(key string, value string) (string, bool) {
-	v := os.Getenv(key)
-	if v == "" {
-		return value, false
-	}
-
-	return v, true
 }
