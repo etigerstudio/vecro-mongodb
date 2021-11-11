@@ -27,7 +27,7 @@ func (svc baseService) Execute() error {
 
 	// Simulate Stress
 	// TODO: Re-determine timings of stress
-	stress(delayTime, delayJitter, cpuLoad, ioLoad)
+	stress(svc.delayTime, svc.delayJitter, svc.cpuLoad, svc.ioLoad)
 
 	// Call downstream services
 	for _, ep := range svc.calls {
