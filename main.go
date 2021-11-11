@@ -26,14 +26,33 @@ func main() {
 		callSeparator = " "
 	)
 
+	const (
+		delayTimeEnvKey = "BEN_DELAY_TIME"
+		delayJitterEnvKey = "BEN_DELAY_JITTER"
+		cpuLoadEnvKey = "BEN_CPU_WORKLOAD"
+		ioLoadEnvKey = "BEN_IO_WORKLOAD"
+	)
+
 	var logger log.Logger
 	logger = log.NewLogfmtLogger(os.Stderr)
 	logger = log.With(logger, "caller", log.DefaultCaller)
 
-	serviceTypeStr, _ := getEnvString(serviceTypeEnvKey, string(vanilla))
-	serviceType := ServiceType(serviceTypeStr)
 
-	logger.Log("service_type", serviceType)
+	var (
+		delayTime int
+		delayJitter int
+		cpuLoad int
+		ioLoad int
+	)
+	delayTime, _ = getEnvInt(delayTimeEnvKey, 0)
+	delayJitter, _ = getEnvInt(delayJitterEnvKey, delayTime / 10)
+	cpuLoad, _ = getEnvInt(cpuLoadEnvKey, 0)
+	ioLoad, _ = getEnvInt(ioLoadEnvKey, 0)
+
+	logger.Log("delay time", delayTime)
+	logger.Log("delay jitter", delayJitter)
+	logger.Log("cpu load", cpuLoad)
+	logger.Log("io load", ioLoad)
 
 	listenAddress, _ := getEnvString(listenAddressEnvKey, ":8080")
 	logger.Log("listen_address", listenAddress)
@@ -83,7 +102,13 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	var svc BaseService
-	svc = baseService{calls: calls, serviceType: serviceType}
+	svc = baseService{
+		calls: calls,
+		delayTime: delayTime,
+		delayJitter: delayJitter,
+		cpuLoad: cpuLoad,
+		ioLoad: ioLoad,
+	}
 	svc = loggingMiddleware(logger)(svc)
 	svc = instrumentingMiddleware(requestCount, requestLatency)(svc)
 

@@ -7,29 +7,10 @@ import (
 	"time"
 )
 
-const (
-	delayTimeEnvKey = "BEN_DELAY_TIME"
-	delayJitterEnvKey = "BEN_DELAY_JITTER"
-	cpuLoadEnvKey = "BEN_CPU_WORKLOAD"
-	ioLoadEnvKey = "BEN_IO_WORKLOAD"
 )
-
-var (
-	delayTime int
-	delayJitter int
-	cpuLoad int
-	ioLoad int
-)
-
-func init() {
-	delayTime, _ = getEnvInt(delayTimeEnvKey, 0)
-	delayJitter, _ = getEnvInt(delayJitterEnvKey, delayTime / 10)
-	cpuLoad, _ = getEnvInt(cpuLoadEnvKey, 0)
-	ioLoad, _ = getEnvInt(ioLoadEnvKey, 0)
-}
 
 // Main stressing entry
-func stress() {
+func stress(delayTime, delayJitter, cpuLoad, ioLoad int) {
 	if delayTime > 0 {
 		delay(delayTime, delayJitter)
 	}
