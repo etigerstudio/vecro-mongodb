@@ -27,10 +27,10 @@ func main() {
 	)
 
 	const (
-		delayTimeEnvKey = "BEN_DELAY_TIME"
-		delayJitterEnvKey = "BEN_DELAY_JITTER"
-		cpuLoadEnvKey = "BEN_CPU_WORKLOAD"
-		ioLoadEnvKey = "BEN_IO_WORKLOAD"
+		workloadCPUEnvKey = "BEN_WORKLOAD_CPU"
+		workloadIOEnvKey = "BEN_WORKLOAD_IO"
+		workloadDelayDurationEnvKey = "BEN_WORKLOAD_DELAY_DURATION"
+		workloadDelayJitterEnvKey = "BEN_WORKLOAD_DELAY_JITTER"
 	)
 
 	var logger log.Logger
@@ -39,17 +39,17 @@ func main() {
 
 
 	var (
-		delayTime int
-		delayJitter int
+		delayDuration int
+		delayJitter   int
 		cpuLoad int
 		ioLoad int
 	)
-	delayTime, _ = getEnvInt(delayTimeEnvKey, 0)
-	delayJitter, _ = getEnvInt(delayJitterEnvKey, delayTime / 10)
-	cpuLoad, _ = getEnvInt(cpuLoadEnvKey, 0)
-	ioLoad, _ = getEnvInt(ioLoadEnvKey, 0)
+	delayDuration, _ = getEnvInt(workloadDelayDurationEnvKey, 0)
+	delayJitter, _ = getEnvInt(workloadDelayJitterEnvKey, delayDuration / 10)
+	cpuLoad, _ = getEnvInt(workloadCPUEnvKey, 0)
+	ioLoad, _ = getEnvInt(workloadIOEnvKey, 0)
 
-	logger.Log("delay time", delayTime)
+	logger.Log("delay duration", delayDuration)
 	logger.Log("delay jitter", delayJitter)
 	logger.Log("cpu load", cpuLoad)
 	logger.Log("io load", ioLoad)
@@ -104,7 +104,7 @@ func main() {
 	var svc BaseService
 	svc = baseService{
 		calls:         calls,
-		delayDuration: delayTime,
+		delayDuration: delayDuration,
 		delayJitter:   delayJitter,
 		cpuLoad:       cpuLoad,
 		ioLoad:        ioLoad,

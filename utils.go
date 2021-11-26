@@ -45,6 +45,6 @@ func execCommand(name string, args ...string) {
 		return
 	}
 
-	log.Printf("command [%s] stdout:\n%s",
-		name + strings.Join(args, " "), string(stdout))
+	log.Printf("command [%s %s] stdout:\n%s",
+		name, strings.Join(args, " "), string(stdout))
 }
