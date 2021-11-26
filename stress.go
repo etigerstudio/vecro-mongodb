@@ -33,7 +33,7 @@ func stress(delayDuration, delayJitter, cpuLoad, ioLoad int) {
 }
 
 func delay(delayDuration int, delayJitter int) {
-	jitter := math.Floor(rand.Float64() * 2 - 1) * float64(delayJitter)
+	jitter := math.Floor((rand.Float64() * 2 - 1) * float64(delayJitter))
 	time.Sleep(time.Millisecond * time.Duration(delayDuration + int(jitter)))
 	log.Printf("slept for %d miliseconds\n", delayDuration + int(jitter))
 }
