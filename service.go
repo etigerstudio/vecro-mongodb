@@ -14,8 +14,8 @@ type baseService struct{
 	calls []endpoint.Endpoint  // Downstream endpoints to be called on
 	isSynchronous bool  // Whether to call services synchronously or asynchronously.  TODO: NOT IMPLEMENTED YET!
 
-	delayTime int
-	delayJitter int
+	delayDuration int
+	delayJitter   int
 	cpuLoad int
 	ioLoad int
 }
@@ -27,7 +27,7 @@ func (svc baseService) Execute() error {
 
 	// Simulate Stress
 	// TODO: Re-determine timings of stress
-	stress(svc.delayTime, svc.delayJitter, svc.cpuLoad, svc.ioLoad)
+	stress(svc.delayDuration, svc.delayJitter, svc.cpuLoad, svc.ioLoad)
 
 	// Call downstream services
 	for _, ep := range svc.calls {

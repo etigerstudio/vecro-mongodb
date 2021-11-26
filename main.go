@@ -103,11 +103,11 @@ func main() {
 
 	var svc BaseService
 	svc = baseService{
-		calls: calls,
-		delayTime: delayTime,
-		delayJitter: delayJitter,
-		cpuLoad: cpuLoad,
-		ioLoad: ioLoad,
+		calls:         calls,
+		delayDuration: delayTime,
+		delayJitter:   delayJitter,
+		cpuLoad:       cpuLoad,
+		ioLoad:        ioLoad,
 	}
 	svc = loggingMiddleware(logger)(svc)
 	svc = instrumentingMiddleware(requestCount, requestLatency)(svc)

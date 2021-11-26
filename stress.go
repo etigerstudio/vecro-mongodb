@@ -9,15 +9,15 @@ import (
 )
 
 const (
-	stressNgName = "stress-ng"
+	stressNgName = "./stress-ng"
 	cpuOpsBase = 6
 	ioOpsBase = 80
 )
 
 // Main stressing entry
-func stress(delayTime, delayJitter, cpuLoad, ioLoad int) {
-	if delayTime > 0 {
-		delay(delayTime, delayJitter)
+func stress(delayDuration, delayJitter, cpuLoad, ioLoad int) {
+	if delayDuration > 0 {
+		delay(delayDuration, delayJitter)
 	}
 
 	// TODO: Implement all-in-one stressing rather than individual
@@ -32,10 +32,10 @@ func stress(delayTime, delayJitter, cpuLoad, ioLoad int) {
 	// TODO: Implement memory stress
 }
 
-func delay(delayTime int, delayJitter int) {
+func delay(delayDuration int, delayJitter int) {
 	jitter := math.Floor(rand.Float64() * 2 - 1) * float64(delayJitter)
-	time.Sleep(time.Millisecond * time.Duration(delayTime + int(jitter)))
-	log.Printf("slept for %d miliseconds\n", delayTime+int(jitter))
+	time.Sleep(time.Millisecond * time.Duration(delayDuration + int(jitter)))
+	log.Printf("slept for %d miliseconds\n", delayDuration + int(jitter))
 }
 
 func cpuStress(cpuLoad int) {
