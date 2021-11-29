@@ -15,9 +15,9 @@ const (
 )
 
 // Main stressing entry
-func stress(delayDuration, delayJitter, cpuLoad, ioLoad int) {
-	if delayDuration > 0 {
-		delay(delayDuration, delayJitter)
+func stress(delayTime, delayJitter, cpuLoad, ioLoad int) {
+	if delayTime > 0 {
+		delay(delayTime, delayJitter)
 	}
 
 	// TODO: Implement all-in-one stressing rather than individual
@@ -32,10 +32,10 @@ func stress(delayDuration, delayJitter, cpuLoad, ioLoad int) {
 	// TODO: Implement memory stress
 }
 
-func delay(delayDuration int, delayJitter int) {
+func delay(delayTime int, delayJitter int) {
 	jitter := math.Floor((rand.Float64() * 2 - 1) * float64(delayJitter))
-	time.Sleep(time.Millisecond * time.Duration(delayDuration + int(jitter)))
-	log.Printf("slept for %d miliseconds\n", delayDuration + int(jitter))
+	time.Sleep(time.Millisecond * time.Duration(delayTime + int(jitter)))
+	log.Printf("slept for %d miliseconds\n", delayTime + int(jitter))
 }
 
 func cpuStress(cpuLoad int) {
@@ -52,7 +52,9 @@ func ioStress(ioLoad int) {
 	// Approximately 80,000 ops per sec => 80 ops per 1ms
 	// on Intel(R) Xeon(R) CPU E5-2630 v4 @ 2.20GHz
 	execCommand(stressNgName,
-		"--io", "1",
-		"--io-ops", strconv.Itoa(ioOpsBase * ioLoad))
+		"--iomix", "1",
+		"--iomix-ops", strconv.Itoa(ioOpsBase * ioLoad),
+		"--iomix-bytes", "4m",
+	)
 	log.Printf("io load amount: %d\n", ioLoad)
 }

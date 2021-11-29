@@ -29,11 +29,11 @@ func main() {
 	)
 
 	const (
-		workloadCPUEnvKey           = "BEN_WORKLOAD_CPU"
-		workloadIOEnvKey            = "BEN_WORKLOAD_IO"
-		workloadDelayDurationEnvKey = "BEN_WORKLOAD_DELAY_DURATION"
-		workloadDelayJitterEnvKey   = "BEN_WORKLOAD_DELAY_JITTER"
-		workloadNetEnvKey           = "BEN_WORKLOAD_NET"
+		workloadCPUEnvKey         = "BEN_WORKLOAD_CPU"
+		workloadIOEnvKey          = "BEN_WORKLOAD_IO"
+		workloadDelayTimeEnvKey   = "BEN_WORKLOAD_DELAY_TIME"
+		workloadDelayJitterEnvKey = "BEN_WORKLOAD_DELAY_JITTER"
+		workloadNetEnvKey         = "BEN_WORKLOAD_NET"
 	)
 
 	// -------------------
@@ -47,19 +47,19 @@ func main() {
 	// Parse Environment variables
 	// -------------------
 	var (
-		delayDuration int
-		delayJitter   int
-		cpuLoad       int
-		ioLoad        int
-		netLoad       int
+		delayTime   int
+		delayJitter int
+		cpuLoad     int
+		ioLoad      int
+		netLoad     int
 	)
-	delayDuration, _ = getEnvInt(workloadDelayDurationEnvKey, 0)
-	delayJitter, _ = getEnvInt(workloadDelayJitterEnvKey, delayDuration/10)
+	delayTime, _ = getEnvInt(workloadDelayTimeEnvKey, 0)
+	delayJitter, _ = getEnvInt(workloadDelayJitterEnvKey, delayTime/10)
 	cpuLoad, _ = getEnvInt(workloadCPUEnvKey, 0)
 	ioLoad, _ = getEnvInt(workloadIOEnvKey, 0)
 	netLoad, _ = getEnvInt(workloadNetEnvKey, 0)
 
-	logger.Log("delay duration", delayDuration)
+	logger.Log("delay time", delayTime)
 	logger.Log("delay jitter", delayJitter)
 	logger.Log("cpu load", cpuLoad)
 	logger.Log("io load", ioLoad)
@@ -87,7 +87,7 @@ func main() {
 		Name:      name,
 		Help:      "Total duration of requests in microseconds.",
 		// TODO: determine appropriate buckets
-		Buckets:   []float64{.0002, .001, .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10},
+		Buckets: []float64{.0002, .001, .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10},
 	}, nil)
 
 	// -------------------
@@ -125,12 +125,12 @@ func main() {
 	// -------------------
 	var svc BaseService
 	svc = baseService{
-		calls:         calls,
-		delayDuration: delayDuration,
-		delayJitter:   delayJitter,
-		cpuLoad:       cpuLoad,
-		ioLoad:        ioLoad,
-		netLoad:       netLoad,
+		calls:       calls,
+		delayTime:   delayTime,
+		delayJitter: delayJitter,
+		cpuLoad:     cpuLoad,
+		ioLoad:      ioLoad,
+		netLoad:     netLoad,
 	}
 	svc = loggingMiddleware(logger)(svc)
 	svc = instrumentingMiddleware(requestCount, requestLatency)(svc)

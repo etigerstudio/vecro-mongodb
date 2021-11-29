@@ -11,25 +11,25 @@ type BaseService interface {
 	Execute() (string, error)
 }
 
-type baseService struct{
-	calls []endpoint.Endpoint  // Downstream endpoints to be called on
-	isSynchronous bool  // Whether to call services synchronously or asynchronously.  TODO: NOT IMPLEMENTED YET!
+type baseService struct {
+	calls         []endpoint.Endpoint // Downstream endpoints to be called on
+	isSynchronous bool                // Whether to call services synchronously or asynchronously.  TODO: NOT IMPLEMENTED YET!
 
-	delayDuration int
-	delayJitter   int
-	cpuLoad int
-	ioLoad int
-	netLoad int
+	delayTime   int
+	delayJitter int
+	cpuLoad     int
+	ioLoad      int
+	netLoad     int
 }
 
 func (svc baseService) Execute() (string, error) {
 	// Establish the connection
-	ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Simulate Stress
 	// TODO: Re-determine timings of stress
-	stress(svc.delayDuration, svc.delayJitter, svc.cpuLoad, svc.ioLoad)
+	stress(svc.delayTime, svc.delayJitter, svc.cpuLoad, svc.ioLoad)
 
 	// Call downstream services
 	for _, ep := range svc.calls {
@@ -44,7 +44,7 @@ func (svc baseService) Execute() (string, error) {
 	// Simulate response payload
 	var payload string
 	if svc.netLoad > 0 {
-		payload = strings.Repeat("0", svc.netLoad / 2)
+		payload = strings.Repeat("0", svc.netLoad/2)
 	}
 
 	// Return result
