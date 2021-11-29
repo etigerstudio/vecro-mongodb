@@ -17,42 +17,53 @@ import (
 )
 
 func main() {
+	// -------------------
+	// Declare constants
+	// -------------------
 	const (
-		nameEnvKey = "BEN_NAME"
-		subsystemEnvKey = "BEN_SUBSYSTEM"
-		serviceTypeEnvKey = "BEN_SERVICE_TYPE"
+		nameEnvKey          = "BEN_NAME"
+		subsystemEnvKey     = "BEN_SUBSYSTEM"
 		listenAddressEnvKey = "BEN_LISTEN_ADDRESS"
-		callEnvKey = "BEN_CALLS"
-		callSeparator = " "
+		callEnvKey          = "BEN_CALLS"
+		callSeparator       = " "
 	)
 
 	const (
-		workloadCPUEnvKey = "BEN_WORKLOAD_CPU"
-		workloadIOEnvKey = "BEN_WORKLOAD_IO"
+		workloadCPUEnvKey           = "BEN_WORKLOAD_CPU"
+		workloadIOEnvKey            = "BEN_WORKLOAD_IO"
 		workloadDelayDurationEnvKey = "BEN_WORKLOAD_DELAY_DURATION"
-		workloadDelayJitterEnvKey = "BEN_WORKLOAD_DELAY_JITTER"
+		workloadDelayJitterEnvKey   = "BEN_WORKLOAD_DELAY_JITTER"
+		workloadNetEnvKey           = "BEN_WORKLOAD_NET"
 	)
 
+	// -------------------
+	// Init logging
+	// -------------------
 	var logger log.Logger
 	logger = log.NewLogfmtLogger(os.Stderr)
 	logger = log.With(logger, "caller", log.DefaultCaller)
 
-
+	// -------------------
+	// Parse Environment variables
+	// -------------------
 	var (
 		delayDuration int
 		delayJitter   int
-		cpuLoad int
-		ioLoad int
+		cpuLoad       int
+		ioLoad        int
+		netLoad       int
 	)
 	delayDuration, _ = getEnvInt(workloadDelayDurationEnvKey, 0)
-	delayJitter, _ = getEnvInt(workloadDelayJitterEnvKey, delayDuration / 10)
+	delayJitter, _ = getEnvInt(workloadDelayJitterEnvKey, delayDuration/10)
 	cpuLoad, _ = getEnvInt(workloadCPUEnvKey, 0)
 	ioLoad, _ = getEnvInt(workloadIOEnvKey, 0)
+	netLoad, _ = getEnvInt(workloadNetEnvKey, 0)
 
 	logger.Log("delay duration", delayDuration)
 	logger.Log("delay jitter", delayJitter)
 	logger.Log("cpu load", cpuLoad)
 	logger.Log("io load", ioLoad)
+	logger.Log("net load", ioLoad)
 
 	listenAddress, _ := getEnvString(listenAddressEnvKey, ":8080")
 	logger.Log("listen_address", listenAddress)
@@ -61,6 +72,9 @@ func main() {
 	name, _ := getEnvString(nameEnvKey, "name")
 	logger.Log("name", name, "subsystem", subsystem)
 
+	// -------------------
+	// Init Prometheus counter & histogram
+	// -------------------
 	requestCount := kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
 		Namespace: "foo_metrics",
 		Subsystem: "get_info",
@@ -68,12 +82,17 @@ func main() {
 		Help:      "Number of requests received.",
 	}, nil)
 	requestLatency := kitprometheus.NewHistogramFrom(stdprometheus.HistogramOpts{
-		Namespace:   "ben_base",
-		Subsystem:   subsystem,
-		Name:        name,
-		Help:        "Total duration of requests in microseconds.",
-		Buckets:     []float64{.001, .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10},
+		Namespace: "ben_base",
+		Subsystem: subsystem,
+		Name:      name,
+		Help:      "Total duration of requests in microseconds.",
+		// TODO: determine appropriate buckets
+		Buckets:   []float64{.0002, .001, .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10},
 	}, nil)
+
+	// -------------------
+	// Init call endpoints
+	// -------------------
 
 	// Create call endpoint list from the environment variable
 	var calls []endpoint.Endpoint
@@ -101,6 +120,9 @@ func main() {
 	// Seed random number generator
 	rand.Seed(time.Now().UnixNano())
 
+	// -------------------
+	// Create & run service
+	// -------------------
 	var svc BaseService
 	svc = baseService{
 		calls:         calls,
@@ -108,6 +130,7 @@ func main() {
 		delayJitter:   delayJitter,
 		cpuLoad:       cpuLoad,
 		ioLoad:        ioLoad,
+		netLoad:       netLoad,
 	}
 	svc = loggingMiddleware(logger)(svc)
 	svc = instrumentingMiddleware(requestCount, requestLatency)(svc)

@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"github.com/go-kit/kit/endpoint"
+	"strings"
 	"time"
 )
 
 type BaseService interface {
-	Execute() error
+	Execute() (string, error)
 }
 
 type baseService struct{
@@ -18,11 +19,12 @@ type baseService struct{
 	delayJitter   int
 	cpuLoad int
 	ioLoad int
+	netLoad int
 }
 
-func (svc baseService) Execute() error {
+func (svc baseService) Execute() (string, error) {
 	// Establish the connection
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
 	defer cancel()
 
 	// Simulate Stress
@@ -35,12 +37,18 @@ func (svc baseService) Execute() error {
 		// TODO: Support async calling mode
 		_, err := ep(ctx, nil)
 		if err != nil {
-			return err
+			return "", err
 		}
 	}
 
+	// Simulate response payload
+	var payload string
+	if svc.netLoad > 0 {
+		payload = strings.Repeat("0", svc.netLoad / 2)
+	}
+
 	// Return result
-	return nil
+	return payload, nil
 }
 
 type ServiceMiddleware func(BaseService) BaseService
