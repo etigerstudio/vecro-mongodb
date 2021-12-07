@@ -22,9 +22,11 @@ type baseService struct {
 	netLoad     int
 }
 
+const executionTimeout = 120*time.Second // TODO: make service timeout configurable
+
 func (svc baseService) Execute() (string, error) {
 	// Establish the connection
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
 	defer cancel()
 
 	// Simulate Stress
