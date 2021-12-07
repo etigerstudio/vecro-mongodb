@@ -10,8 +10,8 @@ import (
 
 const (
 	stressNgName = "./stress-ng"
-	cpuOpsBase = 6
-	ioOpsBase = 80
+	cpuOpsBase = 3
+	ioOpsBase = 4
 )
 
 // Main stressing entry
@@ -39,7 +39,7 @@ func delay(delayTime int, delayJitter int) {
 }
 
 func cpuStress(cpuLoad int) {
-	// Approximately 6,000 ops per sec => 6 ops per 1ms
+	// Approximately 3,000 ops per sec => 3 ops per 1ms
 	// on Intel(R) Xeon(R) CPU E5-2630 v4 @ 2.20GHz
 	execCommand(stressNgName,
 		"--cpu", "1",
@@ -49,12 +49,11 @@ func cpuStress(cpuLoad int) {
 }
 
 func ioStress(ioLoad int) {
-	// Approximately 80,000 ops per sec => 80 ops per 1ms
+	// Approximately 4,000 ops per sec => 4 ops per 1ms
 	// on Intel(R) Xeon(R) CPU E5-2630 v4 @ 2.20GHz
 	execCommand(stressNgName,
-		"--iomix", "1",
-		"--iomix-ops", strconv.Itoa(ioOpsBase * ioLoad),
-		"--iomix-bytes", "4m",
+		"--hdd", "1",
+		"--hdd-ops", strconv.Itoa(ioOpsBase * ioLoad),
 	)
 	log.Printf("io load amount: %d\n", ioLoad)
 }
