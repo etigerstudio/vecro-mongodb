@@ -63,7 +63,7 @@ func main() {
 	logger.Log("delay jitter", delayJitter)
 	logger.Log("cpu load", cpuLoad)
 	logger.Log("io load", ioLoad)
-	logger.Log("net load", ioLoad)
+	logger.Log("net load", netLoad)
 
 	listenAddress, _ := getEnvString(listenAddressEnvKey, ":8080")
 	logger.Log("listen_address", listenAddress)
@@ -87,7 +87,7 @@ func main() {
 		Name:      name,
 		Help:      "Total duration of requests in microseconds.",
 		// TODO: determine appropriate buckets
-		Buckets: []float64{.0002, .001, .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10},
+		Buckets: []float64{.0002, .001, .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10, 15, 25},
 	}, nil)
 
 	// -------------------
