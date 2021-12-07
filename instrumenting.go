@@ -21,12 +21,11 @@ type instrmw struct {
 	BaseService
 }
 
-func (mw instrmw) Execute() error {
+func (mw instrmw) Execute() (string, error) {
 	defer func(begin time.Time) {
 		mw.requestCount.Add(1)
 		mw.requestLatency.Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
-	err := mw.BaseService.Execute()
-	return err
+	return mw.BaseService.Execute()
 }
