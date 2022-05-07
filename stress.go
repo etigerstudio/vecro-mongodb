@@ -18,6 +18,8 @@ const (
 
 // Main stressing entry
 func stress(delayTime, delayJitter, cpuLoad, ioLoad int) {
+	defer printElapsedTime("all-stress")()
+
 	if delayTime > 0 {
 		delay(delayTime, delayJitter)
 	}
@@ -41,6 +43,8 @@ func delay(delayTime int, delayJitter int) {
 }
 
 func cpuStress(cpuLoad int) {
+	defer printElapsedTime("cpu-stress")()
+
 	// Approximately 16,384 * 2 ops per 1ms
 	// on Intel(R) Xeon(R) CPU E5-2630 v4 @ 2.20GHz
 	for i := 0; i < cpuOpsBase * cpuLoad; i++ {
@@ -51,6 +55,8 @@ func cpuStress(cpuLoad int) {
 
 // FIXME: Better file specific error handling in this function
 func ioStress(ioLoad int) {
+	defer printElapsedTime("io-stress")()
+
 	filename := "/tmp/ben_base_stress_" + strconv.FormatUint(rand.Uint64(), 10)
 	f, err := os.Create(filename)
 	if err != nil {
@@ -100,5 +106,7 @@ func ioStress(ioLoad int) {
 	if err != nil {
 		panic(err)
 	}
-	log.Printf("io load amount: %d, total bytes written: %d\n", ioLoad, ioOpsBase * 8 * 128)
+	log.Printf("io load amount: %d, bytes to write: %d, total bytes written: %d\n", ioLoad, ioOpsBase * 8 * 128, totalBytes)
 }
+
+// TODO: Implement memory(malloc) stressing

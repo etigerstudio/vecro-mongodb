@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Get an environment string variable by name
@@ -47,4 +48,12 @@ func execCommand(name string, args ...string) {
 
 	log.Printf("command [%s %s] stdout:\n%s",
 		name, strings.Join(args, " "), string(stdout))
+}
+
+// Log elapsed time for certain function
+func printElapsedTime(what string) func() {
+	start := time.Now()
+	return func() {
+		log.Printf("%s took %v\n", what, time.Since(start))
+	}
 }
