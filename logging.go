@@ -17,7 +17,7 @@ type logmw struct {
 	BaseService
 }
 
-func (mw logmw) Info() (result string, err error) {
+func (mw logmw) Execute() (result string, err error) {
 	defer func(begin time.Time) {
 		_ = mw.logger.Log(
 			"err", err,
