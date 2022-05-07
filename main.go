@@ -133,7 +133,7 @@ func main() {
 		netLoad:     netLoad,
 	}
 	svc = loggingMiddleware(logger)(svc)
-	svc = instrumentingMiddleware(requestCount, requestLatency)(svc)
+	svc = instrumentingMiddleware(requestCount, requestLatency, logger)(svc)
 
 	baseHandler := httptransport.NewServer(
 		makeBaseEndPoint(svc),
