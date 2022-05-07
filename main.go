@@ -76,15 +76,15 @@ func main() {
 	// Init Prometheus counter & histogram
 	// -------------------
 	requestCount := kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
-		Namespace: "foo_metrics",
-		Subsystem: "get_info",
-		Name:      "request_count",
+		Namespace: "ben_base",
+		Subsystem: subsystem,
+		Name:      name + "_request_count",
 		Help:      "Number of requests received.",
 	}, nil)
 	requestLatency := kitprometheus.NewHistogramFrom(stdprometheus.HistogramOpts{
 		Namespace: "ben_base",
 		Subsystem: subsystem,
-		Name:      name,
+		Name:      name + "_request_latency",
 		Help:      "Total duration of requests in microseconds.",
 		// TODO: determine appropriate buckets
 		Buckets: []float64{.0002, .001, .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10, 15, 25},
