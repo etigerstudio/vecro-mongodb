@@ -78,16 +78,22 @@ func main() {
 	requestCount := kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
 		Namespace: "ben_base",
 		Subsystem: subsystem,
-		Name:      name + "_request_count",
+		Name:      "request_count",
 		Help:      "Number of requests received.",
+		ConstLabels: map[string]string{
+			"bensim_service_name": name,
+		},
 	}, nil)
 	requestLatency := kitprometheus.NewHistogramFrom(stdprometheus.HistogramOpts{
 		Namespace: "ben_base",
 		Subsystem: subsystem,
-		Name:      name + "_request_latency",
+		Name:      "request_latency",
 		Help:      "Total duration of requests in microseconds.",
 		// TODO: determine appropriate buckets
 		Buckets: []float64{.0002, .001, .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10, 15, 25},
+		ConstLabels: map[string]string{
+			"bensim_service_name": name,
+		},
 	}, nil)
 
 	// -------------------
