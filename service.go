@@ -33,11 +33,11 @@ func (svc baseService) Execute() (string, error) {
 	for i := 0; i < svc.dbReadOps; i++ {
 		id := rand.Intn(itemsCount)
 		filter := bson.D{{"id", id}}
-		fmt.Printf("db read id: %d", id)
+		fmt.Printf("db read id: %d\n", id)
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		err := svc.dbCollection.FindOne(ctx, filter).Decode(&result)
-		fmt.Printf("db read: %d", id)
+		fmt.Printf("db read: %d\n", id)
 		if err == mongo.ErrNoDocuments {
 			return "id not found", nil
 		} else if err != nil {
@@ -45,13 +45,12 @@ func (svc baseService) Execute() (string, error) {
 		}
 
 		lastResult = fmt.Sprintf("%f", result.Value)
-		fmt.Printf("db read result: %d", lastResult)
+		fmt.Printf("db read result: %s\n", lastResult)
 	}
 
 	// Perform write operations
 	for i := 0; i < svc.dbWriteOps; i++ {
 		document := bson.D{{"app", "ben-sim"}, {"rand_value", rand.Float64()}}
-		fmt.Printf("")
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		result, err := svc.dbCollection.InsertOne(ctx, document)
@@ -60,7 +59,7 @@ func (svc baseService) Execute() (string, error) {
 		}
 
 		lastResult = fmt.Sprintf("%v", result.InsertedID)
-		fmt.Printf("db insert result: %s", lastResult)
+		fmt.Printf("db insert result: %s\n", lastResult)
 	}
 
 	return lastResult, nil
