@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
-	"github.com/go-kit/kit/endpoint"
-	"strings"
+	"fmt"
+	"math/rand"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type BaseService interface {
@@ -12,45 +15,29 @@ type BaseService interface {
 }
 
 type baseService struct {
-	calls         []endpoint.Endpoint // Downstream endpoints to be called on
-	isSynchronous bool                // Whether to call services synchronously or asynchronously.  TODO: NOT IMPLEMENTED YET!
+	dbCollection *mongo.Collection
 
-	delayTime   int
-	delayJitter int
-	cpuLoad     int
-	ioLoad      int
-	netLoad     int
+	dbReadOps  int
+	dbWriteOps int
 }
 
-const executionTimeout = 120*time.Second // TODO: make service timeout configurable
+const itemsCount = 100000
 
 func (svc baseService) Execute() (string, error) {
-	// Establish the connection
-	ctx, cancel := context.WithTimeout(context.Background(), executionTimeout)
+	var result struct {
+		Value float64
+	}
+	filter := bson.D{{"id", rand.Intn(itemsCount)}}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-
-	// Simulate Stress
-	// TODO: Re-determine timings of stress
-	stress(svc.delayTime, svc.delayJitter, svc.cpuLoad, svc.ioLoad)
-
-	// Call downstream services
-	for _, ep := range svc.calls {
-		// TODO: Pass parameters and parse responses
-		// TODO: Support async calling mode
-		_, err := ep(ctx, nil)
-		if err != nil {
-			return "", err
-		}
+	err := svc.dbCollection.FindOne(ctx, filter).Decode(&result)
+	if err == mongo.ErrNoDocuments {
+		return "id not found", nil
+	} else if err != nil {
+		return "failed to find in the collection", nil
 	}
 
-	// Simulate response payload
-	var payload string
-	if svc.netLoad > 0 {
-		payload = strings.Repeat("0", svc.netLoad/2)
-	}
-
-	// Return result
-	return payload, nil
+	return fmt.Sprintf("%f", result.Value), nil
 }
 
 type ServiceMiddleware func(BaseService) BaseService

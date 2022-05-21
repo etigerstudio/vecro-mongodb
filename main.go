@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/go-kit/kit/endpoint"
+	"context"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"math/rand"
 	"net/http"
-	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/go-kit/kit/log"
@@ -24,17 +24,15 @@ func main() {
 		nameEnvKey          = "BEN_NAME"
 		subsystemEnvKey     = "BEN_SUBSYSTEM"
 		listenAddressEnvKey = "BEN_LISTEN_ADDRESS"
-		callEnvKey          = "BEN_CALLS"
-		callSeparator       = " "
+		dbReadOpsEnvKey     = "BEN_DB_READ_OPS"
+		dbWriteOpsEnvKey    = "BEN_DB_WRITE_OPS"
+		dbUserEnvKey        = "BEN_DB_USER"
+		dbPasswordEnvKey    = "BEN_DB_PASSWORD"
+		dbCollectionEnvKey  = "BEN_DB_COLLECTION"
 	)
 
-	const (
-		workloadCPUEnvKey         = "BEN_WORKLOAD_CPU"
-		workloadIOEnvKey          = "BEN_WORKLOAD_IO"
-		workloadDelayTimeEnvKey   = "BEN_WORKLOAD_DELAY_TIME"
-		workloadDelayJitterEnvKey = "BEN_WORKLOAD_DELAY_JITTER"
-		workloadNetEnvKey         = "BEN_WORKLOAD_NET"
-	)
+	const databaseName = "data"
+	const collectionName = "items"
 
 	// -------------------
 	// Init logging
@@ -47,23 +45,23 @@ func main() {
 	// Parse Environment variables
 	// -------------------
 	var (
-		delayTime   int
-		delayJitter int
-		cpuLoad     int
-		ioLoad      int
-		netLoad     int
+		dbReadOps    int
+		dbWriteOps   int
+		dbUser       string
+		dbPassword   string
+		dbCollection string
 	)
-	delayTime, _ = getEnvInt(workloadDelayTimeEnvKey, 0)
-	delayJitter, _ = getEnvInt(workloadDelayJitterEnvKey, delayTime/10)
-	cpuLoad, _ = getEnvInt(workloadCPUEnvKey, 0)
-	ioLoad, _ = getEnvInt(workloadIOEnvKey, 0)
-	netLoad, _ = getEnvInt(workloadNetEnvKey, 0)
+	dbReadOps, _ = getEnvInt(dbReadOpsEnvKey, 1)
+	dbWriteOps, _ = getEnvInt(dbWriteOpsEnvKey, 1)
+	dbUser, _ = getEnvString(dbUserEnvKey, "")
+	dbPassword, _ = getEnvString(dbPasswordEnvKey, "")
+	dbCollection, _ = getEnvString(dbCollectionEnvKey, "")
 
-	logger.Log("delay time", delayTime)
-	logger.Log("delay jitter", delayJitter)
-	logger.Log("cpu load", cpuLoad)
-	logger.Log("io load", ioLoad)
-	logger.Log("net load", netLoad)
+	logger.Log("db read ops", dbReadOps)
+	logger.Log("db write ops", dbWriteOps)
+	logger.Log("db user", dbUser)
+	logger.Log("db password", dbPassword)
+	logger.Log("db collection", dbCollection)
 
 	listenAddress, _ := getEnvString(listenAddressEnvKey, ":8080")
 	logger.Log("listen_address", listenAddress)
@@ -97,31 +95,25 @@ func main() {
 	}, nil)
 
 	// -------------------
-	// Init call endpoints
+	// Init database connection
 	// -------------------
 
-	// Create call endpoint list from the environment variable
-	var calls []endpoint.Endpoint
-	callList, exists := getEnvString(callEnvKey, "")
-	if exists {
-		logger.Log("calls", callList)
-
-		for _, callStr := range strings.Split(callList, callSeparator) {
-			callURL, err := url.Parse(callStr)
-			if err != nil {
-				panic(err)
-			}
-			callEndpoint := httptransport.NewClient(
-				"GET",
-				callURL,
-				encodeRequest,
-				decodeBaseResponse,
-			).Endpoint()
-			calls = append(calls, callEndpoint)
-		}
-	} else {
-		logger.Log("calls", "[empty call list]")
+	// Connect to database and locate the collection
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	credential := options.Credential{
+		Username: "root",
+		Password: "password",
 	}
+	clientOpts := options.Client().
+		ApplyURI("mongodb://localhost").
+		SetAuth(credential)
+	client, err := mongo.Connect(ctx, clientOpts)
+	if err != nil {
+		panic(err)
+	}
+
+	collection := client.Database(databaseName).Collection(collectionName)
 
 	// Seed random number generator
 	rand.Seed(time.Now().UnixNano())
@@ -131,12 +123,9 @@ func main() {
 	// -------------------
 	var svc BaseService
 	svc = baseService{
-		calls:       calls,
-		delayTime:   delayTime,
-		delayJitter: delayJitter,
-		cpuLoad:     cpuLoad,
-		ioLoad:      ioLoad,
-		netLoad:     netLoad,
+		dbCollection: collection,
+		dbReadOps:    dbReadOps,
+		dbWriteOps:   dbWriteOps,
 	}
 	svc = loggingMiddleware(logger)(svc)
 	svc = instrumentingMiddleware(requestCount, requestLatency, logger)(svc)
