@@ -1,4 +1,4 @@
 FROM alpine:3.14
-COPY ben-base /
+COPY ben-mongodb /
 WORKDIR /
-ENTRYPOINT ["./ben-base"]
+ENTRYPOINT ["./ben-mongodb"]
