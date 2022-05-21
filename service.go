@@ -3,11 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"math/rand"
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"math/rand"
+	"time"
 )
 
 type BaseService interface {
@@ -27,17 +26,44 @@ func (svc baseService) Execute() (string, error) {
 	var result struct {
 		Value float64
 	}
-	filter := bson.D{{"id", rand.Intn(itemsCount)}}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	err := svc.dbCollection.FindOne(ctx, filter).Decode(&result)
-	if err == mongo.ErrNoDocuments {
-		return "id not found", nil
-	} else if err != nil {
-		return "failed to find in the collection", nil
+
+	lastResult := ""
+
+	// Perform read operations
+	for i := 0; i < svc.dbReadOps; i++ {
+		id := rand.Intn(itemsCount)
+		filter := bson.D{{"id", id}}
+		fmt.Printf("db read id: %d", id)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		err := svc.dbCollection.FindOne(ctx, filter).Decode(&result)
+		fmt.Printf("db read: %d", id)
+		if err == mongo.ErrNoDocuments {
+			return "id not found", nil
+		} else if err != nil {
+			return "failed to find in the collection", nil
+		}
+
+		lastResult = fmt.Sprintf("%f", result.Value)
+		fmt.Printf("db read result: %d", lastResult)
 	}
 
-	return fmt.Sprintf("%f", result.Value), nil
+	// Perform write operations
+	for i := 0; i < svc.dbWriteOps; i++ {
+		document := bson.D{{"app", "ben-sim"}, {"rand_value", rand.Float64()}}
+		fmt.Printf("")
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		result, err := svc.dbCollection.InsertOne(ctx, document)
+		if err != nil {
+			return "failed to insert into the collection", nil
+		}
+
+		lastResult = fmt.Sprintf("%v", result.InsertedID)
+		fmt.Printf("db insert result: %s", lastResult)
+	}
+
+	return lastResult, nil
 }
 
 type ServiceMiddleware func(BaseService) BaseService
