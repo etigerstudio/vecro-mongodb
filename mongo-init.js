@@ -7,7 +7,7 @@ var items_array = [];
 
 for (var i = 0; i < items_to_insert; i++) {
   items_array.push({
-    app: 'ben-sim',
+    app: 'vecro-sim',
     id: i,
     value: Math.random()
   });

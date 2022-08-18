@@ -50,7 +50,7 @@ func (svc baseService) Execute() (string, error) {
 
 	// Perform write operations
 	for i := 0; i < svc.dbWriteOps; i++ {
-		document := bson.D{{"app", "ben-sim"}, {"rand_value", rand.Float64()}}
+		document := bson.D{{"app", "vecro-sim"}, {"rand_value", rand.Float64()}}
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		result, err := svc.dbCollection.InsertOne(ctx, document)

@@ -1,4 +1,4 @@
 FROM alpine:3.14
-COPY ben-mongodb /
+COPY vecro-mongodb /
 WORKDIR /
-ENTRYPOINT ["./ben-mongodb"]
+ENTRYPOINT ["./vecro-mongodb"]
