@@ -51,8 +51,8 @@ func main() {
 		dbPassword   string
 		dbCollection string
 	)
-	dbReadOps, _ = getEnvInt(dbReadOpsEnvKey, 1)
-	dbWriteOps, _ = getEnvInt(dbWriteOpsEnvKey, 1)
+	dbReadOps, _ = getEnvInt(dbReadOpsEnvKey, 0)
+	dbWriteOps, _ = getEnvInt(dbWriteOpsEnvKey, 0)
 	dbUser, _ = getEnvString(dbUserEnvKey, "")
 	dbPassword, _ = getEnvString(dbPasswordEnvKey, "")
 	dbCollection, _ = getEnvString(dbCollectionEnvKey, "")
