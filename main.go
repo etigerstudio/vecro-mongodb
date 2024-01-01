@@ -21,14 +21,14 @@ func main() {
 	// Declare constants
 	// -------------------
 	const (
-		nameEnvKey          = "BEN_NAME"
-		subsystemEnvKey     = "BEN_SUBSYSTEM"
-		listenAddressEnvKey = "BEN_LISTEN_ADDRESS"
-		dbReadOpsEnvKey     = "BEN_DB_READ_OPS"
-		dbWriteOpsEnvKey    = "BEN_DB_WRITE_OPS"
-		dbUserEnvKey        = "BEN_DB_USER"
-		dbPasswordEnvKey    = "BEN_DB_PASSWORD"
-		dbCollectionEnvKey  = "BEN_DB_COLLECTION"
+		nameEnvKey          = "VECRO_NAME"
+		subsystemEnvKey     = "VECRO_SUBSYSTEM"
+		listenAddressEnvKey = "VECRO_LISTEN_ADDRESS"
+		dbReadOpsEnvKey     = "VECRO_DB_READ_OPS"
+		dbWriteOpsEnvKey    = "VECRO_DB_WRITE_OPS"
+		dbUserEnvKey        = "VECRO_DB_USER"
+		dbPasswordEnvKey    = "VECRO_DB_PASSWORD"
+		dbCollectionEnvKey  = "VECRO_DB_COLLECTION"
 	)
 
 	const databaseName = "data"

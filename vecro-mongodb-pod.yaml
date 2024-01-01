@@ -19,9 +19,9 @@ spec:
   - name: vecro-mongodb
     image: vecro-mongodb:v1
     env:
-    - name: BEN_DB_READ_OPS
+    - name: VECRO_DB_READ_OPS
       value: '0'
-    - name: BEN_DB_WRITE_OPS
+    - name: VECRO_DB_WRITE_OPS
       value: '10'
   volumes:
   - name: init-script
